@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BoBoiBoy: Misi Wira Moral</title>
+<style>
+:root{--cyan:#43e8ff;--gold:#ffe46b;--navy:#07112c;--panel:#081735eF}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,Helvetica,sans-serif;background:#030718;color:#fff}body{overflow-x:hidden}
+.spacefx{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden;background:radial-gradient(2px 2px at 12% 24%,#fff 98%,transparent),radial-gradient(1px 1px at 62% 18%,#c9f7ff 98%,transparent),radial-gradient(2px 2px at 84% 63%,#ffe99b 98%,transparent),radial-gradient(1px 1px at 34% 79%,#fff 98%,transparent);background-size:230px 190px;opacity:.38;animation:twinkle 4s ease-in-out infinite alternate}
+@keyframes twinkle{from{opacity:.15}to{opacity:.52}}
+header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 14px;background:linear-gradient(90deg,#06122bf2,#102a55f2,#06122bf2);border-bottom:1px solid #42eaff66;box-shadow:0 4px 18px #0008}
+.brand{font-weight:900;letter-spacing:.4px;font-size:clamp(.8rem,2vw,1.05rem);text-shadow:0 0 12px #36cfff}.head-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ui-btn{border:1px solid #60eaffaa;border-radius:999px;background:linear-gradient(135deg,#103c73,#08152f);color:#fff;padding:9px 13px;font-weight:800;cursor:pointer;box-shadow:0 0 12px #13cfff22;transition:transform .15s,filter .15s}.ui-btn:hover{transform:translateY(-1px);filter:brightness(1.2)}.ui-btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+main{position:relative;z-index:2;max-width:1672px;margin:0 auto;padding:10px 10px 0}.stage{position:relative;width:100%;line-height:0;border:1px solid #4ceaff66;border-radius:10px;overflow:hidden;box-shadow:0 0 30px #16bdfc2a;background:#020616;aspect-ratio:1672/941}.page-image{display:block;width:100%;height:100%;object-fit:contain;position:absolute;inset:0}.hotspot{position:absolute;display:block;z-index:5;border:0;background:transparent;cursor:pointer;border-radius:18px;line-height:normal}.hotspot:hover{background:#7eeeff12;box-shadow:inset 0 0 0 2px #8af4ff88,0 0 18px #37dfff55}.hotspot:focus-visible{outline:3px solid #ffe66b;background:#fff2}.hotspot span{position:absolute;left:-9999px}
+.stage.quiz-stage{aspect-ratio:auto;height:min(78vh,900px);min-height:520px;border:0;overflow:hidden}.quiz-frame{width:100%;height:100%;border:0;background:#07112c}
+.navbar{display:flex;flex-wrap:wrap;justify-content:center;gap:9px;padding:12px 0 16px;position:relative;z-index:6}.navbar .ui-btn{background:linear-gradient(135deg,#14285a,#06112c);border-color:#56dfff88}.navbar .primary{background:linear-gradient(135deg,#ffdd4f,#ff7b22);color:#1b1232;border-color:#ffe987}
+.status{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;padding:0 0 18px;color:#d6eaff;font-size:.9rem}.meter{width:min(250px,50vw);height:9px;background:#111c3d;border:1px solid #4c76bb;border-radius:999px;overflow:hidden}.meter span{display:block;height:100%;width:0;background:linear-gradient(90deg,#38e8ff,#60ffac,#ffe46b);transition:width .3s}
+.toast{position:fixed;z-index:30;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;pointer-events:none;max-width:min(92vw,600px);background:#071735f5;border:1px solid #61eaff;border-radius:16px;padding:14px 18px;box-shadow:0 0 25px #12cfff66;color:white;font-weight:700;line-height:1.4;text-align:center;transition:opacity .2s,transform .2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+footer{position:relative;z-index:2;text-align:center;color:#9bb7df;font-size:.78rem;padding:0 12px 18px;line-height:1.5}
+@media(max-width:700px){header{align-items:flex-start}.brand{max-width:45%}.head-controls .ui-btn{padding:8px 10px;font-size:.78rem}main{padding:6px 5px 0}.stage{border-radius:6px}.navbar .ui-btn{font-size:.8rem;padding:9px 11px}.stage.quiz-stage{min-height:600px;height:75vh}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="spacefx" aria-hidden="true"></div>
+<header><div class="brand">🚀 BOBOIBOY: MISI WIRA MORAL</div><div class="head-controls"><button class="ui-btn" id="musicBtn" type="button">🎵 Muzik: OFF</button><button class="ui-btn" id="homeBtn" type="button">⌂ Laman Utama</button><button class="ui-btn" id="mapBtn" type="button">🌌 Peta Galaksi</button></div></header>
+<main>
+ <div class="stage" id="stage" aria-label="Paparan halaman pembelajaran"></div>
+ <nav class="navbar" aria-label="Navigasi halaman"><button class="ui-btn" id="prevBtn">← Kembali</button><button class="ui-btn primary" id="nextBtn">Seterusnya →</button><button class="ui-btn" id="mapNavBtn">Peta Galaksi</button></nav>
+ <div class="status"><span id="pageLabel">Halaman 1 daripada 15</span><div class="meter"><span id="progressBar"></span></div><span id="missionStatus">Misi selesai: 0/3</span></div>
+</main>
+<footer>Gunakan butang pada reka bentuk atau navigasi di bawah. Jika muzik tidak bermula, tekan butang Muzik sekali lagi. Kemajuan misi disimpan pada pelayar peranti ini.</footer>
+<audio id="bgMusic" loop preload="none"></audio>
+<audio id="homePageAudio" src="media/muzik-halaman-utama.mp3" loop preload="auto"></audio>
+<div id="musicPicker" style="display:none;position:fixed;inset:0;z-index:50;background:#000b;align-items:center;justify-content:center;padding:18px">
+ <div style="width:min(92vw,520px);background:linear-gradient(145deg,#0b2148,#07112c);border:2px solid #5cecff;border-radius:20px;padding:22px;box-shadow:0 0 35px #18cfff66;color:white">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0;color:#8ff3ff">🎵 PILIH LAGU</h2><button id="closeMusicPicker" class="ui-btn" type="button">✕ Tutup</button></div>
+  <p style="margin:10px 0 14px;color:#d7e9ff">Pilih lagu yang ingin dimainkan semasa pengembaraan.</p>
+  <div style="display:grid;gap:9px">
+   <button class="ui-btn track-btn" data-src="muzik/01_Kembali_Beraksi.mp3">1. Kembali Beraksi — Firdaus Rahmat</button>
+   <button class="ui-btn track-btn" data-src="muzik/02_Fire_and_Water.mp3">2. Fire &amp; Water — Faizal Tahir</button>
+   <button class="ui-btn track-btn" data-src="muzik/03_Di_Bawah_Langit_Yang_Sama.mp3">3. Di Bawah Langit Yang Sama — D'Masiv</button>
+   <button class="ui-btn track-btn" data-src="muzik/04_Masih_Di_Sini.mp3">4. Masih Di Sini — Bunkface</button>
+  </div>
+  <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap"><button id="pauseMusic" class="ui-btn" type="button">⏸ Jeda</button><button id="stopMusic" class="ui-btn" type="button">⏹ Hentikan</button></div>
+ </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const pages = [
+ {id:1,title:'Laman Utama',video:'assets/homepage-intro.mp4',next:2,hot:[{x:30,y:72,w:38,h:15,to:2,label:'Mula misi'},{x:73,y:82,w:21,h:13,action:'music',label:'Pilih muzik'}]},
+ {id:2,title:'Video Pengembaraan',video:'assets/page-02-video.mp4',controls:true,loop:false,prev:1,next:3,hot:[{x:5,y:85,w:20,h:13,to:1,label:'Kembali'},{x:25,y:84,w:39,h:14,to:3,label:'Teruskan ke peta galaksi'}]},
+ {id:3,title:'Peta Galaksi',img:'assets/page-03.png',prev:2,hot:[{x:15,y:75,w:23,h:12,to:4,label:'Teroka Planet Bumi'},{x:39,y:75,w:23,h:12,to:8,label:'Teroka Planet Marikh'},{x:64,y:75,w:23,h:12,to:12,label:'Teroka Planet Zuhal'},{x:1,y:86,w:20,h:13,to:2,label:'Kembali ke taklimat'}]},
+ {id:4,title:'Pengenalan Misi 1: Planet Bumi',img:'assets/page-04.png',prev:3,next:5,hot:[{x:5,y:68,w:48,h:16,to:5,label:'Mula pembelajaran'},{x:4,y:85,w:24,h:13,to:3,label:'Kembali ke peta galaksi'},{x:4,y:48,w:13,h:19,to:5,label:'Maksud'},{x:17,y:48,w:13,h:19,to:5,label:'Cara prihatin'},{x:30,y:48,w:13,h:19,to:5,label:'Kepentingan'},{x:43,y:48,w:13,h:19,to:5,label:'Perasaan'}]},
+ {id:5,title:'Nota dan Aktiviti Planet Bumi',img:'assets/page-05.png',prev:4,next:6,hot:[{x:76,y:75,w:22,h:14,to:6,label:'Mulakan kuiz Planet Bumi'},{x:2,y:87,w:23,h:12,to:3,label:'Kembali ke peta galaksi'},{x:72,y:88,w:26,h:11,to:6,label:'Selesaikan misi'},{x:27,y:64,w:19,h:9,action:'feedback',message:'Pilih tindakan yang membantu jiran dengan sopan dan mengikut kemampuan.'},{x:47,y:63,w:20,h:10,action:'feedback',message:'Jawapan terbaik ialah menawarkan bantuan dengan sopan jika keadaan selamat.'}]},
+ {id:6,title:'Kuiz Planet Bumi',quiz:true,prev:5,next:7},
+ {id:7,title:'Ganjaran Misi 1: Wira Prihatin',img:'assets/page-07.png',prev:3,next:8,complete:1,hot:[{x:20,y:85,w:30,h:13,to:3,label:'Kembali ke peta galaksi'},{x:50,y:85,w:30,h:13,to:8,label:'Teruskan ke Planet Marikh'}]},
+ {id:8,title:'Pengenalan Misi 2: Planet Marikh',img:'assets/page-08.png',prev:7,next:9,hot:[{x:2,y:84,w:28,h:14,to:7,label:'Kembali ke Planet Bumi'},{x:34,y:83,w:32,h:15,to:9,label:'Mula misi'},{x:70,y:83,w:29,h:15,to:9,label:'Teruskan ke pembelajaran'}]},
+ {id:9,title:'Nota Moral: Bertanggungjawab terhadap Jiran',img:'assets/page-09.png',prev:8,next:10},
+ {id:10,title:'Cabaran Wira Moral Planet Marikh',img:'assets/page-10.png',prev:9,next:11,hot:[{x:2,y:86,w:28,h:13,to:9,label:'Kembali ke nota moral'},{x:72,y:86,w:27,h:13,to:11,label:'Teruskan ke situasi seterusnya'},{x:59,y:52,w:36,h:10,action:'answer',correct:false,message:'Cuba lagi. Sikap bertanggungjawab bermaksud membantu jiran mengikut kemampuan.'},{x:59,y:63,w:36,h:10,action:'answer',correct:true,message:'Betul! Membantu jiran mengikut kemampuan dan melaksanakan tugas dengan baik menunjukkan sikap bertanggungjawab.'},{x:59,y:74,w:36,h:10,action:'answer',correct:false,message:'Cuba lagi. Kita perlu mengambil berat terhadap jiran yang memerlukan bantuan.'}]},
+ {id:11,title:'Rumusan Misi Planet Marikh',img:'assets/page-11.png',prev:10,next:12,complete:2,hot:[{x:2,y:86,w:28,h:13,to:3,label:'Kembali ke peta galaksi'},{x:70,y:86,w:29,h:13,to:12,label:'Teruskan ke Planet Zuhal'}]},
+ {id:12,title:'Pengenalan Misi 3: Planet Zuhal',img:'assets/page-12.png',prev:11,next:13,hot:[{x:2,y:84,w:29,h:14,to:11,label:'Kembali ke Planet Marikh'},{x:32,y:83,w:34,h:15,to:13,label:'Mula misi'},{x:69,y:83,w:30,h:15,to:13,label:'Teruskan ke nota moral'}]},
+ {id:13,title:'Nota Moral: Berterima Kasih terhadap Jiran',img:'assets/page-13.png',prev:12,next:14,hot:[{x:2,y:86,w:29,h:13,to:12,label:'Kembali ke pengenalan Planet Zuhal'},{x:69,y:86,w:30,h:13,to:14,label:'Teruskan ke aktiviti pembelajaran'}]},
+ {id:14,title:'Cabaran Wira Moral Planet Zuhal',img:'assets/page-14.png',prev:13,next:15,hot:[{x:1,y:86,w:24,h:13,to:13,label:'Kembali ke nota moral'},{x:75,y:86,w:24,h:13,to:15,label:'Teruskan ke rumusan misi'},{x:20,y:72,w:22,h:6,action:'answer',correct:true,message:'Betul! Ucapkan terima kasih atas bantuan jiran.'},{x:47,y:72,w:22,h:6,action:'answer',correct:true,message:'Betul! Ucapkan terima kasih kepada guru dan berusaha bersungguh-sungguh.'},{x:75,y:72,w:22,h:6,action:'answer',correct:true,message:'Betul! Ucapkan terima kasih dan hargai bantuan rakan.'}]},
+ {id:15,title:'Rumusan Misi Planet Zuhal',img:'assets/page-15.png',prev:14,next:16,complete:3,addGameButton:true,hot:[{x:1,y:85,w:31,h:14,to:14,label:'Kembali ke aktiviti pembelajaran'},{x:67,y:85,w:31,h:14,to:3,label:'Kembali ke peta galaksi'}]},
+ {id:16,title:'Gamifikasi Interaktif BoBoiBoy',game:true,prev:15,next:15}
+];
+let current=1;const stage=document.getElementById('stage'), toast=document.getElementById('toast'), music=document.getElementById('bgMusic'), homePageAudio=document.getElementById('homePageAudio');let toastTimer;
+function syncHomePageAudio(){
+ if(current===1){
+   if(!music.paused) music.pause();
+   const p=homePageAudio.play();
+   if(p && typeof p.catch==='function') p.catch(()=>{say('Audio halaman utama disekat oleh pelayar. Tekan butang Muzik sekali untuk membenarkan audio.');});
+ }else{homePageAudio.pause();homePageAudio.currentTime=0;}
+}
+const completed=new Set(JSON.parse(localStorage.getItem('bwm-completed')||'[]'));
+function say(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),3500)}
+function updateStatus(){document.getElementById('pageLabel').textContent=`Halaman ${current} daripada 16 — ${pages[current-1].title}`;document.getElementById('progressBar').style.width=`${current/16*100}%`;document.getElementById('missionStatus').textContent=`Misi selesai: ${completed.size}/3`;}
+function go(n){n=Number(n);if(!pages[n-1])return;current=n;render();syncHomePageAudio();window.scrollTo({top:0,behavior:'smooth'});}
+function markComplete(m){if(m&&!completed.has(m)){completed.add(m);localStorage.setItem('bwm-completed',JSON.stringify([...completed]));say(`Tahniah! Kemajuan Misi ${m} telah direkodkan.`)}}
+function addHotspot(h){const a=document.createElement('button');a.className='hotspot';a.type='button';a.style.left=h.x+'%';a.style.top=h.y+'%';a.style.width=h.w+'%';a.style.height=h.h+'%';a.setAttribute('aria-label',h.label||h.message||'Butang interaktif');a.title=h.label||'Pilih';a.addEventListener('click',()=>{if(h.to){if(h.to===7)markComplete(1);if(h.to===11)markComplete(2);if(h.to===15)markComplete(3);go(h.to)}else if(h.action==='music'){document.getElementById('musicPicker').style.display='flex'}else if(h.action==='feedback'||h.action==='answer'){if(h.correct===true)say(h.message||'Bagus! Jawapan betul.');else if(h.correct===false)say(h.message||'Belum tepat. Cuba lagi.');else say(h.message||'Teruskan belajar!')}});stage.appendChild(a)}
+function render(){
+ const p=pages[current-1];stage.innerHTML='';stage.classList.toggle('quiz-stage',!!p.quiz||!!p.game);
+ if(p.quiz){
+   const frame=document.createElement('iframe');frame.className='quiz-frame';frame.src='quiz.html';frame.title='Kuiz Planet Bumi';stage.appendChild(frame);
+ }else if(p.game){
+   stage.style.position='relative';
+   const frame=document.createElement('iframe');frame.className='quiz-frame';frame.src='gamifikasi.html';frame.title='Gamifikasi Interaktif BoBoiBoy';stage.appendChild(frame);
+   const controls=document.createElement('div');
+   controls.style.cssText='position:absolute;z-index:20;left:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap';
+   controls.innerHTML='<button class="ui-btn" type="button" style="background:#102a55;color:white" onclick="go(15)">← Kembali ke Halaman 15</button><button class="ui-btn" type="button" style="background:#102a55;color:white" onclick="go(1)">⌂ Halaman Utama</button>';
+   stage.appendChild(controls);
+ }else if(p.video){
+   stage.style.position='relative';
+   const video=document.createElement('video');
+   video.className='page-image';
+   video.src=p.video;
+   video.autoplay=true;video.loop=p.loop!==false;video.muted=true;video.playsInline=true;video.controls=!!p.controls;
+   video.setAttribute('aria-label',p.title+' BoBoiBoy Galaxy');
+   video.addEventListener('click',()=>{video.muted=!video.muted;});
+   video.onerror=()=>say('Video halaman utama tidak dapat dimuat. Pastikan folder assets tidak dipisahkan daripada index.html.');
+   stage.appendChild(video);
+   (p.hot||[]).forEach(addHotspot);
+ }else{
+   stage.style.position='relative';
+   const img=document.createElement('img');img.className='page-image';img.src=p.img;img.alt=p.title;img.draggable=false;img.onerror=()=>say('Gambar tidak dijumpai. Pastikan folder assets tidak dipisahkan daripada index.html.');stage.appendChild(img);
+   (p.hot||[]).forEach(addHotspot);
+   if(p.addGameButton){
+     const gameButton=document.createElement('button');
+     gameButton.className='ui-btn';gameButton.type='button';
+     gameButton.textContent='🚀 TERUSKAN KE GAMIFIKASI INTERAKTIF';
+     gameButton.setAttribute('aria-label','Teruskan ke gamifikasi interaktif');
+     gameButton.style.cssText='position:absolute;z-index:10;left:50%;bottom:3%;transform:translateX(-50%);font-size:clamp(.68rem,1.25vw,.95rem);font-weight:800;white-space:nowrap;background:linear-gradient(135deg,#ffdd4f,#ff7b22);color:#1b1232;border:2px solid #fff0a0;border-radius:12px;padding:10px 14px;box-shadow:0 0 18px #ffb52e88;max-width:96%;';
+     gameButton.addEventListener('click',()=>go(16));stage.appendChild(gameButton);
+   }
+   if(p.customButtons){
+     const controls=document.createElement('div');
+     controls.style.cssText='position:absolute;z-index:8;left:0;right:0;bottom:3%;display:flex;justify-content:center;gap:14px;flex-wrap:wrap;padding:8px';
+     controls.innerHTML='<button class="ui-btn" type="button" style="font-size:clamp(.75rem,1.5vw,1rem);background:linear-gradient(135deg,#143b70,#07152e);border:2px solid #7cecff;box-shadow:0 0 18px #37dfff66" onclick="go(1)">🏠 KEMBALI KE HALAMAN UTAMA</button><button class="ui-btn" type="button" style="font-size:clamp(.75rem,1.5vw,1rem);background:linear-gradient(135deg,#ffdd4f,#ff7b22);color:#1b1232;border:2px solid #fff0a0" onclick="go(17)">🚀 TERUSKAN KE GAMIFIKASI INTERAKTIF</button>';
+     stage.appendChild(controls);
+   }
+ }
+ if(p.complete)markComplete(p.complete);
+ document.getElementById('prevBtn').disabled=!p.prev;
+ document.getElementById('prevBtn').style.opacity=p.prev?'1':'.45';
+ document.getElementById('nextBtn').textContent=current===15?'Teruskan ke Gamifikasi →':current===16?'Kembali ke Rumusan Misi →':'Seterusnya →';
+ updateStatus();
+}
+document.getElementById('prevBtn').addEventListener('click',()=>{const p=pages[current-1];go(p.prev||1)});document.getElementById('nextBtn').addEventListener('click',()=>{const p=pages[current-1];go(p.next||3)});document.getElementById('mapBtn').addEventListener('click',()=>go(3));document.getElementById('mapNavBtn').addEventListener('click',()=>go(3));document.getElementById('homeBtn').addEventListener('click',()=>go(1));
+const musicPicker=document.getElementById('musicPicker');
+document.getElementById('musicBtn').addEventListener('click',()=>{musicPicker.style.display='flex';if(current===1){homePageAudio.pause();homePageAudio.currentTime=0;}});
+document.getElementById('closeMusicPicker').addEventListener('click',()=>{musicPicker.style.display='none';if(current===1&&music.paused)syncHomePageAudio();});
+document.querySelectorAll('.track-btn').forEach(btn=>btn.addEventListener('click',async()=>{
+ homePageAudio.pause();homePageAudio.currentTime=0;music.src=btn.dataset.src;music.loop=true;
+ try{await music.play();document.getElementById('musicBtn').textContent='🎵 Muzik: ON';say('Sedang memainkan: '+btn.textContent)}
+ catch(e){say('Lagu tidak dapat dimainkan. Pastikan folder muzik berada bersama index.html.')}
+}));
+document.getElementById('pauseMusic').addEventListener('click',()=>{music.pause();if(current===1)syncHomePageAudio();document.getElementById('musicBtn').textContent='🎵 Muzik: OFF'});
+document.getElementById('stopMusic').addEventListener('click',()=>{music.pause();music.currentTime=0;if(current===1)syncHomePageAudio();document.getElementById('musicBtn').textContent='🎵 Muzik: OFF'});
+music.addEventListener('ended',()=>{document.getElementById('musicBtn').textContent='🎵 Muzik: OFF'});
+// Audio bermula selepas murid memilih lagu dalam senarai.
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(pages[current-1].next||3);if(e.key==='ArrowLeft')go(pages[current-1].prev||1)});
+render();
+syncHomePageAudio();
+</script>
+</body></html>

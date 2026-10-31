@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BoBoiBoy Galaxy: Misi Wira Moral</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- MediaPipe Hands Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            width: 100vw;
+        }
+        .font-orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Galactic Background Animation */
+        #space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Holographic Glass Panel Styling */
+        .holo-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.15), inset 0 0 15px rgba(56, 189, 248, 0.1);
+            border-radius: 16px;
+        }
+
+        .holo-panel-gold {
+            background: rgba(30, 20, 5, 0.8);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 25px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Futuristic Crystal Word Card */
+        .word-crystal {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.25) 0%, rgba(3, 105, 161, 0.45) 100%);
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4), inset 0 0 10px rgba(56, 189, 248, 0.2);
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .word-crystal:hover, .word-crystal.hovered {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.5) 0%, rgba(14, 165, 233, 0.8) 100%);
+            border-color: #7dd3fc;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
+            transform: translateY(-4px) scale(1.05);
+        }
+        .word-crystal.selected {
+            opacity: 0.3;
+            transform: scale(0.95);
+            filter: grayscale(80%);
+            pointer-events: none;
+        }
+
+        /* Slot Dropzone */
+        .word-slot {
+            background: rgba(15, 23, 42, 0.5);
+            border: 2px dashed rgba(56, 189, 248, 0.4);
+            clip-path: polygon(8px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px), 0 8px);
+            transition: all 0.3s ease;
+        }
+        .word-slot.filled {
+            border: 2px solid #38bdf8;
+            background: rgba(14, 165, 233, 0.2);
+        }
+
+        /* Video / Hands Canvas Overlay */
+        #webcam-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 135px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #06b6d4;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+            z-index: 50;
+            background: #000;
+        }
+        #webcam, #output_canvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+        #output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Fingertip Laser Pointer */
+        #hand-pointer {
+            position: fixed;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 3px solid #00f0ff;
+            background: rgba(0, 240, 255, 0.3);
+            box-shadow: 0 0 20px #00f0ff, inset 0 0 10px #00f0ff;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            display: none;
+            transition: width 0.1s, height 0.1s;
+        }
+        #hand-pointer::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: #ffffff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #ffffff;
+        }
+
+        /* SVG Circular Progress Dwell Ring */
+        #dwell-svg {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            width: 44px;
+            height: 44px;
+            transform: rotate(-90deg);
+        }
+        #dwell-circle {
+            stroke-dasharray: 126;
+            stroke-dashoffset: 126;
+            transition: stroke-dashoffset 0.05s linear;
+        }
+
+        /* Portal Warp FX */
+        .portal-warp {
+            animation: warpAnimation 0.8s ease-in-out forwards;
+        }
+        @keyframes warpAnimation {
+            0% { transform: scale(1) rotate(0deg); opacity: 1; filter: blur(0px); }
+            50% { transform: scale(2.5) rotate(180deg); opacity: 0.8; filter: blur(10px); }
+            100% { transform: scale(0) rotate(360deg); opacity: 0; filter: blur(20px); }
+        }
+
+        /* Pulse glow animation */
+        .pulse-glow {
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            0% { filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.5)); }
+            100% { filter: drop-shadow(0 0 25px rgba(56, 189, 248, 0.9)); }
+        }
+
+        /* Button Sci-Fi Styling */
+        .btn-scifi {
+            position: relative;
+            background: linear-gradient(90deg, #0284c7 0%, #0369a1 100%);
+            border: 1px solid #38bdf8;
+            clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+            transition: all 0.2s ease;
+        }
+        .btn-scifi:hover, .btn-scifi.hovered {
+            background: linear-gradient(90deg, #38bdf8 0%, #0284c7 100%);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.7);
+            transform: translateY(-2px);
+        }
+        .btn-scifi-orange {
+            background: linear-gradient(90deg, #ea580c 0%, #c2410c 100%);
+            border: 1px solid #fb923c;
+        }
+        .btn-scifi-orange:hover, .btn-scifi-orange.hovered {
+            background: linear-gradient(90deg, #fb923c 0%, #ea580c 100%);
+            box-shadow: 0 0 20px rgba(251, 146, 60, 0.7);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0284c7;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="relative flex flex-col justify-between items-center select-none overflow-hidden">
+
+    <!-- Canvas Background for Starfield -->
+    <canvas id="space-bg"></canvas>
+
+    <!-- Hand Pointer Overlay -->
+    <div id="hand-pointer">
+        <svg id="dwell-svg">
+            <circle id="dwell-circle" cx="22" cy="22" r="20" stroke="#00f0ff" stroke-width="4" fill="none" />
+        </svg>
+    </div>
+
+    <!-- Web Camera Preview Container -->
+    <div id="webcam-container" class="hidden flex-col items-center justify-center">
+        <video id="webcam" playsinline></video>
+        <canvas id="output_canvas"></canvas>
+        <div id="cam-status" class="absolute top-1 left-1 bg-black/70 text-[10px] text-cyan-400 px-1.5 py-0.5 rounded font-orbitron flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span> KAWALAN TANGAN
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app-viewport" class="relative z-10 w-full h-full flex flex-col justify-between p-4 max-w-7xl mx-auto">
+        
+        <!-- HEADER HUD -->
+        <header class="w-full flex justify-between items-center py-2 px-4 holo-panel border-b border-cyan-500/30">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-cyan-500/50">
+                    <i class="fa-solid fa-user-astronaut"></i>
+                </div>
+                <div>
+                    <h1 class="font-orbitron text-lg md:text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-300 tracking-wider">
+                        BOBOIBOY GALAXY
+                    </h1>
+                    <p class="text-xs text-cyan-200/70 font-orbitron tracking-widest">MISI WIRA MORAL TAHUN 4</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <!-- Score & Stats -->
+                <div id="hud-stats" class="hidden md:flex items-center gap-4 bg-slate-900/80 px-4 py-1.5 rounded-lg border border-cyan-500/40">
+                    <div class="text-center">
+                        <span class="text-[10px] text-gray-400 block font-orbitron">TENAGA MORAL</span>
+                        <span id="score-val" class="text-lg font-bold text-amber-400 font-orbitron">0</span>
+                    </div>
+                    <div class="h-6 w-px bg-cyan-500/30"></div>
+                    <div class="text-center">
+                        <span class="text-[10px] text-gray-400 block font-orbitron">BINTANG</span>
+                        <span id="star-val" class="text-lg font-bold text-yellow-300 font-orbitron">⭐ 0</span>
+                    </div>
+                </div>
+
+                <!-- Camera Toggle Button -->
+                <button id="btn-toggle-cam" onclick="toggleCameraMode()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/40 text-xs font-orbitron flex items-center gap-2 transition-all">
+                    <i class="fa-solid fa-camera"></i>
+                    <span id="cam-btn-text">MOD KAMERA: MATI</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: START / LANDING PAGE -->
+        <main id="screen-start" class="flex-1 flex flex-col items-center justify-center text-center p-4 my-auto relative z-20">
+            <div class="max-w-2xl w-full holo-panel p-6 md:p-10 flex flex-col items-center gap-6 border-cyan-400/50 relative overflow-hidden">
+                <!-- Glowing Orb Background Effect -->
+                <div class="absolute -top-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl"></div>
+
+                <!-- Title Header -->
+                <div class="space-y-2">
+                    <span class="inline-block px-3 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-orbitron tracking-widest uppercase mb-2">
+                        Pendidikan Moral Tahun 4
+                    </span>
+                    <h2 class="font-orbitron text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-200 to-indigo-400 tracking-wider pulse-glow">
+                        BOBOIBOY GALAXY
+                    </h2>
+                    <h3 class="font-orbitron text-xl md:text-2xl font-bold text-amber-400 tracking-widest">
+                        MISI WIRA MORAL
+                    </h3>
+                </div>
+
+                <!-- BoBoiBoy Hero Avatar & Narration -->
+                <div class="flex items-center gap-4 bg-slate-950/60 p-4 rounded-xl border border-cyan-500/30 max-w-lg">
+                    <div class="w-16 h-16 shrink-0 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center border-2 border-yellow-300 shadow-lg shadow-orange-500/30 text-3xl text-white">
+                        ⚡
+                    </div>
+                    <p class="text-sm md:text-base text-cyan-100 text-left leading-relaxed">
+                        "Bersedia, Wira Moral! Jelajahi tiga planet galaksi, selesaikan cabaran nilai murni dan kumpulkan tenaga moral untuk menyelamatkan galaksi!"
+                    </p>
+                </div>
+
+                <!-- Main Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 w-full max-w-md mt-2">
+                    <button onclick="startGameSequence()" class="btn-scifi flex-1 py-4 px-6 text-white font-orbitron font-bold text-base tracking-wider flex items-center justify-center gap-3">
+                        <i class="fa-solid fa-rocket text-amber-300 text-xl"></i>
+                        🚀 MULA PENGEMBARAAN
+                    </button>
+                    <button onclick="openInstructionsModal()" class="btn-scifi btn-scifi-orange py-4 px-6 text-white font-orbitron font-bold text-base tracking-wider flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-book-open text-xl"></i>
+                        📖 CARA BERMAIN
+                    </button>
+                </div>
+
+                <!-- Camera mode prompt -->
+                <div class="text-xs text-gray-400 flex items-center gap-2">
+                    <i class="fa-solid fa-hand text-cyan-400"></i>
+                    <span>Menyokong kawalan 1 tangan melalui kamera atau sentuhan biasa.</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- SCREEN 2: GALAXY PLANET MAP -->
+        <main id="screen-map" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-20 w-full">
+            <div class="text-center mb-6">
+                <h2 class="font-orbitron text-2xl md:text-3xl font-bold text-cyan-300 tracking-widest">
+                    PETA GALAKSI MISI
+                </h2>
+                <p class="text-sm text-gray-300">Pilih planet untuk memulakan cabaran nilai moral</p>
+            </div>
+
+            <!-- Planets Container -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full max-w-5xl">
+                
+                <!-- PLANET 1: BUMI -->
+                <div id="planet-card-1" onclick="selectPlanet(1)" class="holo-panel p-6 flex flex-col items-center justify-between text-center border-emerald-500/40 hover:border-emerald-400 cursor-pointer transition-all duration-300 hover:scale-105 group">
+                    <div class="relative w-36 h-36 flex items-center justify-center mb-4">
+                        <div class="absolute inset-0 rounded-full bg-emerald-500/20 blur-xl group-hover:bg-emerald-500/40 transition-all"></div>
+                        <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-teal-700 via-emerald-500 to-cyan-400 shadow-lg shadow-emerald-500/50 flex items-center justify-center border-2 border-emerald-300 relative overflow-hidden">
+                            <span class="text-5xl">🌍</span>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-xs font-orbitron text-emerald-400 tracking-widest block">PLANET 1</span>
+                        <h3 class="font-orbitron text-xl font-bold text-white">PLANET BUMI</h3>
+                        <p class="text-xs text-emerald-200 bg-emerald-950/60 py-1 px-3 rounded-full border border-emerald-500/40 font-semibold inline-block">
+                            NILAI: BAIK HATI
+                        </p>
+                    </div>
+                    <div class="mt-4 w-full bg-slate-900/80 rounded-full h-3 border border-emerald-500/30 overflow-hidden">
+                        <div id="p1-progress" class="bg-gradient-to-r from-emerald-500 to-teal-300 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <span id="p1-status" class="text-[11px] text-gray-400 font-orbitron mt-2">MISI 0/3 SELESAI</span>
+                </div>
+
+                <!-- PLANET 2: MARIKH -->
+                <div id="planet-card-2" onclick="selectPlanet(2)" class="holo-panel p-6 flex flex-col items-center justify-between text-center border-red-500/40 opacity-60 cursor-not-allowed transition-all duration-300 group">
+                    <div class="relative w-36 h-36 flex items-center justify-center mb-4">
+                        <div class="absolute inset-0 rounded-full bg-red-500/20 blur-xl group-hover:bg-red-500/40 transition-all"></div>
+                        <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-red-800 via-orange-600 to-amber-500 shadow-lg shadow-red-500/50 flex items-center justify-center border-2 border-orange-300 relative overflow-hidden">
+                            <span class="text-5xl">🔴</span>
+                            <div id="p2-lock" class="absolute inset-0 bg-black/60 flex items-center justify-center text-amber-400 text-3xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-xs font-orbitron text-orange-400 tracking-widest block">PLANET 2</span>
+                        <h3 class="font-orbitron text-xl font-bold text-white">PLANET MARIKH</h3>
+                        <p class="text-xs text-orange-200 bg-orange-950/60 py-1 px-3 rounded-full border border-orange-500/40 font-semibold inline-block">
+                            NILAI: BERTANGGUNGJAWAB
+                        </p>
+                    </div>
+                    <div class="mt-4 w-full bg-slate-900/80 rounded-full h-3 border border-orange-500/30 overflow-hidden">
+                        <div id="p2-progress" class="bg-gradient-to-r from-orange-500 to-amber-400 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <span id="p2-status" class="text-[11px] text-gray-400 font-orbitron mt-2">TERKUNCI</span>
+                </div>
+
+                <!-- PLANET 3: ZUHAL -->
+                <div id="planet-card-3" onclick="selectPlanet(3)" class="holo-panel p-6 flex flex-col items-center justify-between text-center border-purple-500/40 opacity-60 cursor-not-allowed transition-all duration-300 group">
+                    <div class="relative w-36 h-36 flex items-center justify-center mb-4">
+                        <div class="absolute inset-0 rounded-full bg-purple-500/20 blur-xl group-hover:bg-purple-500/40 transition-all"></div>
+                        <div class="w-28 h-28 rounded-full bg-gradient-to-tr from-purple-900 via-indigo-600 to-pink-500 shadow-lg shadow-purple-500/50 flex items-center justify-center border-2 border-purple-300 relative overflow-hidden">
+                            <span class="text-5xl">🪐</span>
+                            <div id="p3-lock" class="absolute inset-0 bg-black/60 flex items-center justify-center text-amber-400 text-3xl">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-y-1">
+                        <span class="text-xs font-orbitron text-purple-400 tracking-widest block">PLANET 3</span>
+                        <h3 class="font-orbitron text-xl font-bold text-white">PLANET ZUHAL</h3>
+                        <p class="text-xs text-purple-200 bg-purple-950/60 py-1 px-3 rounded-full border border-purple-500/40 font-semibold inline-block">
+                            NILAI: BERTERIMA KASIH
+                        </p>
+                    </div>
+                    <div class="mt-4 w-full bg-slate-900/80 rounded-full h-3 border border-purple-500/30 overflow-hidden">
+                        <div id="p3-progress" class="bg-gradient-to-r from-purple-500 to-pink-400 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                    <span id="p3-status" class="text-[11px] text-gray-400 font-orbitron mt-2">TERKUNCI</span>
+                </div>
+
+            </div>
+
+            <!-- Back to start button -->
+            <button onclick="showScreen('start')" class="mt-8 px-6 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 border border-slate-600 text-xs font-orbitron">
+                <i class="fa-solid fa-arrow-left mr-2"></i> KEMBALI KE MENU
+            </button>
+        </main>
+
+        <!-- SCREEN 3: GAMEPLAY (UNSCRAMBLE WORDS) -->
+        <main id="screen-game" class="hidden flex-1 flex flex-col justify-between items-center p-2 md:p-4 relative z-20 w-full max-w-4xl mx-auto">
+            
+            <!-- Mission Header Info -->
+            <div class="w-full holo-panel p-4 flex flex-col sm:flex-row justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="mission-badge" class="px-3 py-1 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/50 text-xs font-orbitron font-bold">
+                        PLANET BUMI - MISI 1
+                    </span>
+                    <h3 id="mission-title" class="text-sm md:text-base font-bold text-white">
+                        MISI: BANTU JIRAN
+                    </h3>
+                </div>
+                <div class="text-xs text-cyan-200 bg-slate-950/60 px-3 py-1.5 rounded-lg border border-cyan-500/30">
+                    <i class="fa-solid fa-bullseye text-amber-400 mr-1"></i>
+                    <span id="mission-instruction">Susun perkataan untuk membina ayat yang betul.</span>
+                </div>
+            </div>
+
+            <!-- Answer Hologram Dropzone Area -->
+            <div class="w-full my-4 p-6 holo-panel border-cyan-400/40 flex flex-col items-center justify-center min-h-[160px]">
+                <span class="text-[10px] font-orbitron text-cyan-400 tracking-widest uppercase mb-3 block">
+                    RUANG JAWAPAN HOLOGRAM
+                </span>
+                <div id="answer-slots-container" class="flex flex-wrap justify-center items-center gap-2 md:gap-3 w-full">
+                    <!-- Dynamic Answer Slots -->
+                </div>
+            </div>
+
+            <!-- Scrambled Word Crystals Grid -->
+            <div class="w-full my-2 p-4 bg-slate-950/60 rounded-xl border border-cyan-500/20 flex flex-col items-center">
+                <span class="text-[10px] font-orbitron text-gray-400 tracking-widest uppercase mb-3 block">
+                    KAD PERKATAAN KRISTAL (SENTUH / HALAKAN FINGER FOR 1 SEC)
+                </span>
+                <div id="word-crystals-container" class="flex flex-wrap justify-center items-center gap-2 md:gap-4 w-full min-h-[100px]">
+                    <!-- Dynamic Word Crystals -->
+                </div>
+            </div>
+
+            <!-- Game Action Controls -->
+            <div class="w-full flex flex-wrap justify-center items-center gap-3 mt-4">
+                <button id="btn-undo" onclick="undoWord()" class="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-cyan-500/40 text-xs font-orbitron font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> UNDUR SATU
+                </button>
+                <button id="btn-reset" onclick="resetCurrentMission()" class="px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 text-xs font-orbitron font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate"></i> SUSUN SEMULA
+                </button>
+                <button id="btn-check" onclick="checkAnswer()" class="btn-scifi px-6 py-2.5 text-white font-orbitron font-bold text-xs tracking-wider flex items-center gap-2">
+                    <i class="fa-solid fa-circle-check text-emerald-300"></i> SEMAK AYAT
+                </button>
+            </div>
+
+            <!-- Feedback Modal Popup -->
+            <div id="feedback-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+                <div class="holo-panel p-6 max-w-md w-full text-center flex flex-col items-center gap-4 border-2 relative">
+                    <div id="feedback-icon" class="w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg"></div>
+                    <h3 id="feedback-title" class="font-orbitron text-2xl font-bold"></h3>
+                    <p id="feedback-msg" class="text-sm text-gray-200 leading-relaxed"></p>
+                    
+                    <button id="feedback-next-btn" class="btn-scifi py-3 px-8 text-white font-orbitron font-bold text-sm tracking-wider mt-2">
+                        MISI SETERUSNYA 🚀
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- SCREEN 4: VICTORY SCREEN -->
+        <main id="screen-victory" class="hidden flex-1 flex flex-col justify-center items-center p-4 relative z-20 w-full text-center">
+            <div class="holo-panel holo-panel-gold p-8 max-w-xl w-full flex flex-col items-center gap-6 border-amber-400">
+                <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-amber-400 to-yellow-200 flex items-center justify-center text-5xl shadow-xl shadow-amber-500/50 animate-bounce">
+                    🏆
+                </div>
+
+                <div class="space-y-2">
+                    <h2 class="font-orbitron text-3xl font-black text-amber-300 tracking-wider">
+                        TAHNIAH, WIRA GALAXY!
+                    </h2>
+                    <p class="text-sm text-amber-100">
+                        Anda telah berjaya menyelesaikan semua 9 misi nilai moral dan menyelamatkan galaksi!
+                    </p>
+                </div>
+
+                <!-- Final Stats -->
+                <div class="grid grid-cols-2 gap-4 w-full max-w-xs bg-slate-950/80 p-4 rounded-xl border border-amber-500/30">
+                    <div class="text-center">
+                        <span class="text-xs text-gray-400 block font-orbitron">JUMLAH SKOR</span>
+                        <span id="final-score" class="text-2xl font-bold text-amber-400 font-orbitron">90</span>
+                    </div>
+                    <div class="text-center">
+                        <span class="text-xs text-gray-400 block font-orbitron">BINTANG GALAXY</span>
+                        <span id="final-stars" class="text-2xl font-bold text-yellow-300 font-orbitron">⭐⭐⭐</span>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 w-full max-w-sm mt-2">
+                    <button onclick="restartGame()" class="btn-scifi flex-1 py-3 text-white font-orbitron font-bold text-xs">
+                        🔄 MAIN SEMULA
+                    </button>
+                    <button onclick="showScreen('map')" class="btn-scifi btn-scifi-orange flex-1 py-3 text-white font-orbitron font-bold text-xs">
+                        🗺️ PETA GALAKSI
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <!-- FOOTER HUD -->
+        <footer class="w-full text-center py-2 text-[11px] text-cyan-500/60 font-orbitron">
+            BOBOIBOY GALAXY: MISI WIRA MORAL &copy; PENDIDIKAN MORAL TAHUN 4
+        </footer>
+
+    </div>
+
+    <!-- INSTRUCTIONS MODAL -->
+    <div id="modal-instructions" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="holo-panel p-6 max-w-lg w-full flex flex-col gap-4 border-cyan-400/60">
+            <div class="flex justify-between items-center border-b border-cyan-500/30 pb-3">
+                <h3 class="font-orbitron text-lg font-bold text-cyan-300">📖 CARA BERMAIN</h3>
+                <button onclick="closeInstructionsModal()" class="text-gray-400 hover:text-white text-xl">&times;</button>
+            </div>
+            
+            <div class="space-y-3 text-xs md:text-sm text-gray-200 leading-relaxed max-h-80 overflow-y-auto pr-2">
+                <div class="flex items-start gap-3 bg-slate-900/60 p-2.5 rounded-lg border border-cyan-500/20">
+                    <span class="text-xl">🌌</span>
+                    <p><strong>Pilih Planet:</strong> Terokai 3 planet utama mengikut urutan. Setiap planet mewakili nilai moral berbeza.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-slate-900/60 p-2.5 rounded-lg border border-cyan-500/20">
+                    <span class="text-xl">💎</span>
+                    <p><strong>Susun Perkataan:</strong> Pilih kad kristal perkataan untuk diletakkan di ruang jawapan hologram sehingga membentuk ayat yang lengkap dan murni.</p>
+                </div>
+                <div class="flex items-start gap-3 bg-slate-900/60 p-2.5 rounded-lg border border-cyan-500/20">
+                    <span class="text-xl">🖐️</span>
+                    <p><strong>Kawalan Kamera Tangan:</strong> Aktifkan "MOD KAMERA", dapatkan kebenaran webcam, dan halakan jari telunjuk anda di atas kad perkataan selama 1 saat untuk memilihnya!</p>
+                </div>
+            </div>
+
+            <button onclick="closeInstructionsModal()" class="btn-scifi py-2.5 text-white font-orbitron font-bold text-xs mt-2">
+                FAHAM & TUTUP
+            </button>
+        </div>
+    </div>
+
+    <!-- SOUND EFFECTS (AUDIO SYNTHESIS VIA WEB AUDIO API) -->
+    <script>
+        // Web Audio API Sound Generator (No external MP3 links required)
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioCtx();
+            }
+        }
+
+        function playSound(type) {
+            try {
+                initAudio();
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'select') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.exponentialRampToValueAtTime(880, now + 0.1);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.1);
+                    osc.frequency.setValueAtTime(783.99, now + 0.2);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(160, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'warp') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(150, now);
+                    osc.frequency.exponentialRampToValueAtTime(600, now + 0.5);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch(e) {
+                console.log("Audio not allowed yet");
+            }
+        }
+    </script>
+
+    <!-- GAME LOGIC & MEDIAPIPE HANDS IMPLEMENTATION -->
+    <script>
+        /* ===================================================
+           1. DATA STRUCTURE & GAME STATE
+           =================================================== */
+        const MISSIONS_DATA = [
+            // Planet 1: Bumi (Baik Hati) - Levels 1-3
+            { id: 1, planetId: 1, title: "MISI 1: BANTU JIRAN", instruction: "Susun perkataan untuk membina ayat yang menunjukkan sikap baik hati.", targetSentence: ["Saya", "membantu", "jiran", "dengan", "ikhlas."] },
+            { id: 2, planetId: 1, title: "MISI 2: AGIPAN MAKANAN", instruction: "Susun perkataan untuk menunjukkan amalan berkongsi rezeki.", targetSentence: ["Kami", "memberi", "makanan", "kepada", "jiran."] },
+            { id: 3, planetId: 1, title: "MISI 3: AMALAN MULIA", instruction: "Susun perkataan nilai baik hati murid.", targetSentence: ["Murid", "yang", "baik", "hati", "sentiasa", "menolong."] },
+
+            // Planet 2: Marikh (Bertanggungjawab) - Levels 4-6
+            { id: 4, planetId: 2, title: "MISI 4: JAGA KEBERSIHAN", instruction: "Susun perkataan yang menunjukkan sikap bertanggungjawab di rumah.", targetSentence: ["Saya", "menjaga", "kebersihan", "kawasan", "rumah."] },
+            { id: 5, planetId: 2, title: "MISI 5: TUGASAN SELESAI", instruction: "Susun perkataan tentang disiplin dan amanah masa.", targetSentence: ["Kita", "perlu", "menyiapkan", "tugasan", "tepat", "pada", "masa."] },
+            { id: 6, planetId: 2, title: "MISI 6: AMANAH WIRA", instruction: "Susun perkataan berkaitan tugas seorang wira moral.", targetSentence: ["Wira", "moral", "sentiasa", "melaksanakan", "amanah."] },
+
+            // Planet 3: Zuhal (Berterima Kasih) - Levels 7-9
+            { id: 7, planetId: 3, title: "MISI 7: UCAPAN TERIMA KASIH", instruction: "Susun perkataan untuk menunjukkan rasa hormat kepada guru.", targetSentence: ["Saya", "mengucapkan", "terima", "kasih", "kepada", "guru."] },
+            { id: 8, planetId: 3, title: "MISI 8: HARGAI IBU BAPA", instruction: "Susun perkataan amalan menghargai jasa ibu bapa.", targetSentence: ["Kita", "mestilah", "menghargai", "pengorbanan", "ibu", "bapa."] },
+            { id: 9, planetId: 3, title: "MISI 9: RASA BERSYUKUR", instruction: "Susun perkataan tentang kebahagiaan hidup bersyukur.", targetSentence: ["Rasa", "bersyukur", "menjadikan", "kehidupan", "kita", "bahagia."] }
+        ];
+
+        let gameState = {
+            currentMissionIndex: 0,
+            score: 0,
+            stars: 0,
+            unlockedPlanets: [1], // 1 is unlocked initially
+            completedMissions: [],
+            selectedWords: [],
+            scrambledWords: [],
+            cameraActive: false
+        };
+
+        /* ===================================================
+           2. CANVAS GALACTIC STARFIELD
+           =================================================== */
+        const bgCanvas = document.getElementById('space-bg');
+        const bgCtx = bgCanvas.getContext('2d');
+        let stars = [];
+
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            initStars();
+        }
+
+        function initStars() {
+            stars = [];
+            const count = Math.floor((bgCanvas.width * bgCanvas.height) / 3000);
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    radius: Math.random() * 1.5 + 0.5,
+                    alpha: Math.random(),
+                    speed: Math.random() * 0.02 + 0.005
+                });
+            }
+        }
+
+        function drawStars() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            bgCtx.fillStyle = "#ffffff";
+
+            stars.forEach(star => {
+                star.alpha += star.speed;
+                if (star.alpha > 1 || star.alpha < 0) star.speed = -star.speed;
+
+                bgCtx.globalAlpha = Math.abs(star.alpha);
+                bgCtx.beginPath();
+                bgCtx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                bgCtx.fill();
+            });
+            requestAnimationFrame(drawStars);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        drawStars();
+
+        /* ===================================================
+           3. UI NAVIGATION & SCREEN MANAGERS
+           =================================================== */
+        function showScreen(screenId) {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-map').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-victory').classList.add('hidden');
+
+            const active = document.getElementById('screen-' + screenId);
+            active.classList.remove('hidden');
+
+            // Show HUD stats in gameplay or victory
+            if (screenId === 'game' || screenId === 'victory' || screenId === 'map') {
+                document.getElementById('hud-stats').classList.remove('hidden');
+            }
+        }
+
+        function startGameSequence() {
+            playSound('warp');
+            document.getElementById('app-viewport').classList.add('portal-warp');
+            setTimeout(() => {
+                document.getElementById('app-viewport').classList.remove('portal-warp');
+                showScreen('map');
+                updateMapUI();
+            }, 750);
+        }
+
+        function openInstructionsModal() {
+            document.getElementById('modal-instructions').classList.remove('hidden');
+        }
+
+        function closeInstructionsModal() {
+            document.getElementById('modal-instructions').classList.add('hidden');
+        }
+
+        /* ===================================================
+           4. PLANET MAP SYSTEM
+           =================================================== */
+        function updateMapUI() {
+            // Planet 1 progress
+            const p1Missions = MISSIONS_DATA.filter(m => m.planetId === 1);
+            const p1Done = p1Missions.filter(m => gameState.completedMissions.includes(m.id)).length;
+            document.getElementById('p1-progress').style.width = (p1Done / 3 * 100) + '%';
+            document.getElementById('p1-status').innerText = `MISI ${p1Done}/3 SELESAI`;
+
+            // Planet 2 progress
+            const p2Card = document.getElementById('planet-card-2');
+            const p2Lock = document.getElementById('p2-lock');
+            if (gameState.unlockedPlanets.includes(2)) {
+                p2Card.classList.remove('opacity-60', 'cursor-not-allowed');
+                p2Card.classList.add('hover:border-orange-400', 'cursor-pointer');
+                p2Lock.classList.add('hidden');
+            }
+            const p2Missions = MISSIONS_DATA.filter(m => m.planetId === 2);
+            const p2Done = p2Missions.filter(m => gameState.completedMissions.includes(m.id)).length;
+            document.getElementById('p2-progress').style.width = (p2Done / 3 * 100) + '%';
+            document.getElementById('p2-status').innerText = gameState.unlockedPlanets.includes(2) ? `MISI ${p2Done}/3 SELESAI` : "TERKUNCI";
+
+            // Planet 3 progress
+            const p3Card = document.getElementById('planet-card-3');
+            const p3Lock = document.getElementById('p3-lock');
+            if (gameState.unlockedPlanets.includes(3)) {
+                p3Card.classList.remove('opacity-60', 'cursor-not-allowed');
+                p3Card.classList.add('hover:border-purple-400', 'cursor-pointer');
+                p3Lock.classList.add('hidden');
+            }
+            const p3Missions = MISSIONS_DATA.filter(m => m.planetId === 3);
+            const p3Done = p3Missions.filter(m => gameState.completedMissions.includes(m.id)).length;
+            document.getElementById('p3-progress').style.width = (p3Done / 3 * 100) + '%';
+            document.getElementById('p3-status').innerText = gameState.unlockedPlanets.includes(3) ? `MISI ${p3Done}/3 SELESAI` : "TERKUNCI";
+        }
+
+        function selectPlanet(planetNum) {
+            if (!gameState.unlockedPlanets.includes(planetNum)) {
+                playSound('wrong');
+                return;
+            }
+
+            // Find first uncompleted mission in planet or default to first of planet
+            const planetMissions = MISSIONS_DATA.filter(m => m.planetId === planetNum);
+            const firstUndone = planetMissions.find(m => !gameState.completedMissions.includes(m.id));
+
+            if (firstUndone) {
+                gameState.currentMissionIndex = MISSIONS_DATA.findIndex(m => m.id === firstUndone.id);
+            } else {
+                gameState.currentMissionIndex = MISSIONS_DATA.findIndex(m => m.id === planetMissions[0].id);
+            }
+
+            loadMission(gameState.currentMissionIndex);
+            showScreen('game');
+        }
+
+        /* ===================================================
+           5. GAMEPLAY & UNSCRAMBLE LOGIC
+           =================================================== */
+        function loadMission(index) {
+            const mission = MISSIONS_DATA[index];
+            gameState.selectedWords = [];
+
+            // Update HUD text
+            document.getElementById('mission-badge').innerText = `PLANET ${mission.planetId} - MISI ${mission.id}`;
+            document.getElementById('mission-title').innerText = mission.title;
+            document.getElementById('mission-instruction').innerText = mission.instruction;
+
+            // Scramble target sentence words
+            gameState.scrambledWords = shuffleArray([...mission.targetSentence]);
+
+            renderGameElements();
+        }
+
+        function shuffleArray(array) {
+            let cur = array.length, randomIndex;
+            while (cur !== 0) {
+                randomIndex = Math.floor(Math.random() * cur);
+                cur--;
+                [array[cur], array[randomIndex]] = [array[randomIndex], array[cur]];
+            }
+            return array;
+        }
+
+        function renderGameElements() {
+            const currentMission = MISSIONS_DATA[gameState.currentMissionIndex];
+
+            // Render Slots Container
+            const slotsContainer = document.getElementById('answer-slots-container');
+            slotsContainer.innerHTML = '';
+            for (let i = 0; i < currentMission.targetSentence.length; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'word-slot min-w-[90px] h-12 px-3 flex items-center justify-center text-sm md:text-base font-bold text-cyan-200';
+
+                if (gameState.selectedWords[i] !== undefined) {
+                    slot.classList.add('filled');
+                    slot.innerText = gameState.selectedWords[i];
+                } else {
+                    slot.innerText = '';
+                }
+                slotsContainer.appendChild(slot);
+            }
+
+            // Render Scrambled Crystal Cards
+            const crystalContainer = document.getElementById('word-crystals-container');
+            crystalContainer.innerHTML = '';
+
+            gameState.scrambledWords.forEach((wordObj, idx) => {
+                const card = document.createElement('div');
+                card.className = 'word-crystal interactive-target px-4 py-2.5 text-sm md:text-base font-bold text-white shadow-md';
+                card.innerText = wordObj;
+                card.setAttribute('data-index', idx);
+
+                // Check how many instances of this word have been selected
+                const occurrencesInScrambled = gameState.scrambledWords.filter((w, i) => w === wordObj && i <= idx).length;
+                const occurrencesInSelected = gameState.selectedWords.filter(w => w === wordObj).length;
+
+                if (occurrencesInSelected >= occurrencesInScrambled) {
+                    card.classList.add('selected');
+                } else {
+                    card.onclick = () => selectWord(wordObj);
+                }
+
+                crystalContainer.appendChild(card);
+            });
+        }
+
+        function selectWord(word) {
+            const currentMission = MISSIONS_DATA[gameState.currentMissionIndex];
+            if (gameState.selectedWords.length < currentMission.targetSentence.length) {
+                playSound('select');
+                gameState.selectedWords.push(word);
+                renderGameElements();
+            }
+        }
+
+        function undoWord() {
+            if (gameState.selectedWords.length > 0) {
+                playSound('select');
+                gameState.selectedWords.pop();
+                renderGameElements();
+            }
+        }
+
+        function resetCurrentMission() {
+            playSound('select');
+            gameState.selectedWords = [];
+            renderGameElements();
+        }
+
+        function checkAnswer() {
+            const currentMission = MISSIONS_DATA[gameState.currentMissionIndex];
+
+            if (gameState.selectedWords.length < currentMission.targetSentence.length) {
+                showFeedbackModal(false, "Sila susun semua perkataan terlebih dahulu!", true);
+                return;
+            }
+
+            const isCorrect = gameState.selectedWords.every((val, index) => val === currentMission.targetSentence[index]);
+
+            if (isCorrect) {
+                playSound('correct');
+                if (!gameState.completedMissions.includes(currentMission.id)) {
+                    gameState.completedMissions.push(currentMission.id);
+                    gameState.score += 10;
+                    gameState.stars += 1;
+                    document.getElementById('score-val').innerText = gameState.score;
+                    document.getElementById('star-val').innerText = `⭐ ${gameState.stars}`;
+                }
+
+                // Unlock next planet logic
+                if (gameState.completedMissions.length >= 3 && !gameState.unlockedPlanets.includes(2)) {
+                    gameState.unlockedPlanets.push(2);
+                }
+                if (gameState.completedMissions.length >= 6 && !gameState.unlockedPlanets.includes(3)) {
+                    gameState.unlockedPlanets.push(3);
+                }
+
+                showFeedbackModal(true, `Syabas! Anda telah berjaya menyusun ayat moral dengan tepat: "${currentMission.targetSentence.join(" ")}"`);
+            } else {
+                playSound('wrong');
+                showFeedbackModal(false, "Ayat yang disusun kurang tepat. Cuba susun semula perkataan mengikut susunan murni yang betul.");
+            }
+        }
+
+        function showFeedbackModal(isSuccess, message, isWarning = false) {
+            const modal = document.getElementById('feedback-modal');
+            const icon = document.getElementById('feedback-icon');
+            const title = document.getElementById('feedback-title');
+            const msg = document.getElementById('feedback-msg');
+            const nextBtn = document.getElementById('feedback-next-btn');
+
+            modal.classList.remove('hidden');
+            msg.innerText = message;
+
+            if (isSuccess) {
+                icon.className = "w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg bg-emerald-500/20 text-emerald-400 border border-emerald-400/50 animate-bounce";
+                icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+                title.className = "font-orbitron text-2xl font-bold text-emerald-400";
+                title.innerText = "HEBAT, WIRA MORAL!";
+                nextBtn.innerText = "MISI SETERUSNYA 🚀";
+                nextBtn.onclick = function() {
+                    modal.classList.add('hidden');
+                    advanceNextMission();
+                };
+            } else {
+                icon.className = "w-20 h-20 rounded-full flex items-center justify-center text-4xl shadow-lg bg-red-500/20 text-red-400 border border-red-400/50";
+                icon.innerHTML = isWarning ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-circle-xmark"></i>';
+                title.className = "font-orbitron text-2xl font-bold text-red-400";
+                title.innerText = isWarning ? "PERHATIAN" : "CUBA LAGI!";
+                nextBtn.innerText = "CUBA SEMULA 🔄";
+                nextBtn.onclick = function() {
+                    modal.classList.add('hidden');
+                };
+            }
+        }
+
+        function advanceNextMission() {
+            if (gameState.completedMissions.length >= 9) {
+                // All missions complete victory!
+                showVictoryScreen();
+            } else {
+                gameState.currentMissionIndex++;
+                if (gameState.currentMissionIndex >= MISSIONS_DATA.length) {
+                    showScreen('map');
+                    updateMapUI();
+                } else {
+                    loadMission(gameState.currentMissionIndex);
+                }
+            }
+        }
+
+        function showVictoryScreen() {
+            document.getElementById('final-score').innerText = gameState.score;
+            document.getElementById('final-stars').innerText = "⭐".repeat(Math.min(9, gameState.stars));
+            showScreen('victory');
+        }
+
+        function restartGame() {
+            gameState.score = 0;
+            gameState.stars = 0;
+            gameState.completedMissions = [];
+            gameState.unlockedPlanets = [1];
+            document.getElementById('score-val').innerText = '0';
+            document.getElementById('star-val').innerText = '⭐ 0';
+            showScreen('start');
+        }
+
+        /* ===================================================
+           6. MEDIAPIPE HANDS CAMERA CONTROL & DWELL SELECTION
+           =================================================== */
+        const videoElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const handPointer = document.getElementById('hand-pointer');
+        const dwellCircle = document.getElementById('dwell-circle');
+
+        let cameraInstance = null;
+        let dwellTarget = null;
+        let dwellStartTime = 0;
+        const DWELL_DURATION = 1000; // 1 second dwell duration
+        let dwellTriggered = false;
+
+        function toggleCameraMode() {
+            initAudio();
+            gameState.cameraActive = !gameState.cameraActive;
+            const btnText = document.getElementById('cam-btn-text');
+            const camContainer = document.getElementById('webcam-container');
+
+            if (gameState.cameraActive) {
+                btnText.innerText = "MOD KAMERA: HIDUP";
+                camContainer.classList.remove('hidden');
+                handPointer.style.display = 'block';
+                startMediaPipeCamera();
+            } else {
+                btnText.innerText = "MOD KAMERA: MATI";
+                camContainer.classList.add('hidden');
+                handPointer.style.display = 'none';
+                stopMediaPipeCamera();
+            }
+        }
+
+        function startMediaPipeCamera() {
+            const hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.6,
+                minTrackingConfidence: 0.6
+            });
+
+            hands.onResults(onHandResults);
+
+            cameraInstance = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({ image: videoElement });
+                },
+                width: 320,
+                height: 240
+            });
+
+            cameraInstance.start().catch(err => {
+                alert("Gagal mengakses kamera. Permainan akan kekal menggunakan mod sentuhan.");
+                toggleCameraMode();
+            });
+        }
+
+        function stopMediaPipeCamera() {
+            if (cameraInstance) {
+                cameraInstance.stop();
+                cameraInstance = null;
+            }
+        }
+
+        function onHandResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                // Landmark 8 is Index Finger Tip
+                const indexTip = landmarks[8];
+
+                // Mirror X coordinate since webcam feed is mirrored
+                const screenX = (1 - indexTip.x) * window.innerWidth;
+                const screenY = indexTip.y * window.innerHeight;
+
+                // Move custom hand cursor pointer
+                handPointer.style.left = `${screenX}px`;
+                handPointer.style.top = `${screenY}px`;
+
+                // Check hit testing with interactive UI elements
+                checkDwellHover(screenX, screenY);
+            } else {
+                resetDwell();
+            }
+            canvasCtx.restore();
+        }
+
+        function checkDwellHover(x, y) {
+            // Find element under laser fingertip pointer
+            const hoveredElem = document.elementFromPoint(x, y);
+
+            if (!hoveredElem) {
+                resetDwell();
+                return;
+            }
+
+            // Find closest target button or crystal card
+            const targetBtn = hoveredElem.closest('.word-crystal, .btn-scifi, #btn-undo, #btn-reset, #btn-check, #planet-card-1, #planet-card-2, #planet-card-3');
+
+            if (targetBtn && !targetBtn.classList.contains('selected') && !targetBtn.classList.contains('opacity-60')) {
+                if (dwellTarget === targetBtn) {
+                    const elapsed = Date.now() - dwellStartTime;
+                    const progress = Math.min(1, elapsed / DWELL_DURATION);
+
+                    // Update radial SVG stroke-dashoffset (126 is circumference)
+                    const offset = 126 - (126 * progress);
+                    dwellCircle.style.strokeDashoffset = offset;
+
+                    if (progress >= 1 && !dwellTriggered) {
+                        dwellTriggered = true;
+                        targetBtn.click(); // Trigger click event!
+                        resetDwell();
+                    }
+                } else {
+                    dwellTarget = targetBtn;
+                    dwellStartTime = Date.now();
+                    dwellTriggered = false;
+                }
+            } else {
+                resetDwell();
+            }
+        }
+
+        function resetDwell() {
+            dwellTarget = null;
+            dwellStartTime = 0;
+            dwellTriggered = false;
+            dwellCircle.style.strokeDashoffset = 126;
+        }
+    </script>
+</body>
+</html>
