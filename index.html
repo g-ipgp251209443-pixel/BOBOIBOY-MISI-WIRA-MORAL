@@ -49,8 +49,7 @@ footer{position:relative;z-index:2;text-align:center;color:#9bb7df;font-size:.78
 <script>
 const pages = [
  {id:1,title:'Laman Utama',video:'assets/homepage-intro.mp4',next:2,hot:[{x:30,y:72,w:38,h:15,to:2,label:'Mula misi'},{x:73,y:82,w:21,h:13,action:'music',label:'Pilih muzik'}]},
- {id:2,title:'Video Pengembaraan',video:'assets/page-02-video.mp4',controls:true,loop:false,prev:1,next:3,hot:[{x:5,y:85,w:20,h:13,to:1,label:'Kembali'},{x:25,y:84,w:39,h:14,to:3,label:'Teruskan ke peta galaksi'}]},
- {id:3,title:'Peta Galaksi',img:'assets/page-03.png',prev:2,hot:[{x:15,y:75,w:23,h:12,to:4,label:'Teroka Planet Bumi'},{x:39,y:75,w:23,h:12,to:8,label:'Teroka Planet Marikh'},{x:64,y:75,w:23,h:12,to:12,label:'Teroka Planet Zuhal'},{x:1,y:86,w:20,h:13,to:2,label:'Kembali ke taklimat'}]},
+{id:2,title:'Video Pengembaraan',video:'assets/page-02-video.mp4',controls:true,loop:false,prev:1,next:3,hot:[{x:5,y:85,w:20,h:13,to:1,label:'Kembali'},{x:25,y:84,w:39,h:14,to:3,label:'Teruskan ke peta galaksi'},{x:70,y:84,w:25,h:14,action:'videos',label:'Pilih Video Pembelajaran'}]}, {id:3,title:'Peta Galaksi',img:'assets/page-03.png',prev:2,hot:[{x:15,y:75,w:23,h:12,to:4,label:'Teroka Planet Bumi'},{x:39,y:75,w:23,h:12,to:8,label:'Teroka Planet Marikh'},{x:64,y:75,w:23,h:12,to:12,label:'Teroka Planet Zuhal'},{x:1,y:86,w:20,h:13,to:2,label:'Kembali ke taklimat'}]},
  {id:4,title:'Pengenalan Misi 1: Planet Bumi',img:'assets/page-04.png',prev:3,next:5,hot:[{x:5,y:68,w:48,h:16,to:5,label:'Mula pembelajaran'},{x:4,y:85,w:24,h:13,to:3,label:'Kembali ke peta galaksi'},{x:4,y:48,w:13,h:19,to:5,label:'Maksud'},{x:17,y:48,w:13,h:19,to:5,label:'Cara prihatin'},{x:30,y:48,w:13,h:19,to:5,label:'Kepentingan'},{x:43,y:48,w:13,h:19,to:5,label:'Perasaan'}]},
  {id:5,title:'Nota dan Aktiviti Planet Bumi',img:'assets/page-05.png',prev:4,next:6,hot:[{x:76,y:75,w:22,h:14,to:6,label:'Mulakan kuiz Planet Bumi'},{x:2,y:87,w:23,h:12,to:3,label:'Kembali ke peta galaksi'},{x:72,y:88,w:26,h:11,to:6,label:'Selesaikan misi'},{x:27,y:64,w:19,h:9,action:'feedback',message:'Pilih tindakan yang membantu jiran dengan sopan dan mengikut kemampuan.'},{x:47,y:63,w:20,h:10,action:'feedback',message:'Jawapan terbaik ialah menawarkan bantuan dengan sopan jika keadaan selamat.'}]},
  {id:6,title:'Kuiz Planet Bumi',quiz:true,prev:5,next:7},
@@ -78,7 +77,74 @@ function say(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout
 function updateStatus(){document.getElementById('pageLabel').textContent=`Halaman ${current} daripada 16 — ${pages[current-1].title}`;document.getElementById('progressBar').style.width=`${current/16*100}%`;document.getElementById('missionStatus').textContent=`Misi selesai: ${completed.size}/3`;}
 function go(n){n=Number(n);if(!pages[n-1])return;current=n;render();syncHomePageAudio();window.scrollTo({top:0,behavior:'smooth'});}
 function markComplete(m){if(m&&!completed.has(m)){completed.add(m);localStorage.setItem('bwm-completed',JSON.stringify([...completed]));say(`Tahniah! Kemajuan Misi ${m} telah direkodkan.`)}}
-function addHotspot(h){const a=document.createElement('button');a.className='hotspot';a.type='button';a.style.left=h.x+'%';a.style.top=h.y+'%';a.style.width=h.w+'%';a.style.height=h.h+'%';a.setAttribute('aria-label',h.label||h.message||'Butang interaktif');a.title=h.label||'Pilih';a.addEventListener('click',()=>{if(h.to){if(h.to===7)markComplete(1);if(h.to===11)markComplete(2);if(h.to===15)markComplete(3);go(h.to)}else if(h.action==='music'){document.getElementById('musicPicker').style.display='flex'}else if(h.action==='feedback'||h.action==='answer'){if(h.correct===true)say(h.message||'Bagus! Jawapan betul.');else if(h.correct===false)say(h.message||'Belum tepat. Cuba lagi.');else say(h.message||'Teruskan belajar!')}});stage.appendChild(a)}
+function addHotspot(h){
+  const a=document.createElement('button');
+  a.className='hotspot';
+  a.type='button';
+  a.style.left=h.x+'%';
+  a.style.top=h.y+'%';
+  a.style.width=h.w+'%';
+  a.style.height=h.h+'%';
+  a.setAttribute('aria-label',h.label||h.message||'Butang interaktif');
+  a.title=h.label||'Pilih';
+
+  a.addEventListener('click',()=>{
+    if(h.to){
+      if(h.to===7)markComplete(1);
+      if(h.to===11)markComplete(2);
+      if(h.to===15)markComplete(3);
+      go(h.to);
+    }
+    else if(h.action==='music'){
+      document.getElementById('musicPicker').style.display='flex';
+    }
+    else if(h.action==='videos'){
+      const modal=document.createElement('div');
+      modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;padding:15px;';
+
+      modal.innerHTML=`
+        <div style="background:#102a55;color:white;padding:22px;border-radius:18px;width:min(750px,100%);max-height:90vh;overflow:auto;text-align:center;">
+          <h2>🎬 PILIH VIDEO PEMBELAJARAN</h2>
+          <button id="video1" class="ui-btn">Video 1</button>
+          <button id="video2" class="ui-btn">Video 2</button>
+          <div id="youtubePlayer" style="margin-top:18px;aspect-ratio:16/9;">
+            <iframe id="youtubeFrame" width="100%" height="100%"
+              src="https://www.youtube-nocookie.com/embed/Iu8kvMPS-fU"
+              title="Video Pembelajaran 1"
+              style="border:0;border-radius:12px;"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>
+          </div>
+          <br>
+          <button id="closeVideos" class="ui-btn">✖ Tutup Video</button>
+        </div>`;
+
+      document.body.appendChild(modal);
+
+      const frame=modal.querySelector('#youtubeFrame');
+
+      modal.querySelector('#video1').onclick=()=>{
+        frame.src='https://www.youtube-nocookie.com/embed/Iu8kvMPS-fU';
+      };
+
+      modal.querySelector('#video2').onclick=()=>{
+        frame.src='https://www.youtube-nocookie.com/embed/cedq3atBUi8';
+      };
+
+      modal.querySelector('#closeVideos').onclick=()=>{
+        frame.src='';
+        modal.remove();
+      };
+    }
+    else if(h.action==='feedback'||h.action==='answer'){
+      if(h.correct===true)say(h.message||'Bagus! Jawapan betul.');
+      else if(h.correct===false)say(h.message||'Belum tepat. Cuba lagi.');
+      else say(h.message||'Teruskan belajar!');
+    }
+  });
+
+  stage.appendChild(a);
+}
 function render(){
  const p=pages[current-1];stage.innerHTML='';stage.classList.toggle('quiz-stage',!!p.quiz||!!p.game);
  if(p.quiz){
